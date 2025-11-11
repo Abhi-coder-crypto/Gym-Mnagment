@@ -3,14 +3,18 @@ import { AdminSidebar } from "@/components/admin-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UploadVideoModal } from "@/components/upload-video-modal";
 import { Search, Plus } from "lucide-react";
 import { VideoCard } from "@/components/video-card";
 import strengthImage from "@assets/generated_images/Strength_training_video_thumbnail_e7f2ebd6.png";
 import yogaImage from "@assets/generated_images/Yoga_class_video_thumbnail_a8a89f8b.png";
 import cardioImage from "@assets/generated_images/Cardio_workout_video_thumbnail_2c386154.png";
+import { useState } from "react";
 
 export default function AdminVideos() {
   const style = { "--sidebar-width": "16rem" };
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const videos = [
     { id: 1, title: "Full Body Strength Training", category: "Strength", duration: "45 min", thumbnail: strengthImage, views: 1243 },
@@ -23,6 +27,10 @@ export default function AdminVideos() {
     { id: 8, title: "Evening Relaxation Yoga", category: "Yoga", duration: "25 min", thumbnail: yogaImage, views: 654 },
     { id: 9, title: "Beginner Cardio Workout", category: "Cardio", duration: "20 min", thumbnail: cardioImage, views: 2341 },
   ];
+
+  const filteredVideos = videos.filter(video =>
+    video.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
@@ -39,23 +47,27 @@ export default function AdminVideos() {
 
           <main className="flex-1 overflow-auto p-8">
             <div className="max-w-7xl mx-auto space-y-6">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search videos..."
                     className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     data-testid="input-search-videos"
                   />
                 </div>
-                <Button data-testid="button-upload-video">
+                <Button onClick={() => setShowUploadModal(true)} data-testid="button-upload-video">
                   <Plus className="h-4 w-4 mr-2" />
                   Upload Video
                 </Button>
               </div>
 
+              <p className="text-muted-foreground">{filteredVideos.length} videos in library</p>
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {videos.map((video) => (
+                {filteredVideos.map((video) => (
                   <VideoCard
                     key={video.id}
                     title={video.title}
@@ -70,6 +82,11 @@ export default function AdminVideos() {
           </main>
         </div>
       </div>
+
+      <UploadVideoModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+      />
     </SidebarProvider>
   );
 }

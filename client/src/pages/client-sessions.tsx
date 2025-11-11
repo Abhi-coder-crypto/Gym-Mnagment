@@ -65,9 +65,10 @@ export default function ClientSessions() {
         <div className="container mx-auto px-6 space-y-8">
           <div>
             <h1 className="text-3xl font-display font-bold tracking-tight">Live Training Sessions</h1>
-            <p className="text-muted-foreground mt-1">
-              Join live sessions with certified trainers - <Badge className="bg-chart-3">Elite Plan</Badge>
-            </p>
+            <div className="text-muted-foreground mt-1 flex items-center gap-2">
+              <span>Join live sessions with certified trainers -</span>
+              <Badge className="bg-chart-3">Elite Plan</Badge>
+            </div>
           </div>
 
           {liveSessions.length > 0 && (

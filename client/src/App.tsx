@@ -10,10 +10,13 @@ import AdminVideos from "@/pages/admin-videos";
 import AdminDiet from "@/pages/admin-diet";
 import AdminSessions from "@/pages/admin-sessions";
 import AdminAnalytics from "@/pages/admin-analytics";
+import AdminRevenue from "@/pages/admin-revenue";
 import ClientDashboard from "@/pages/client-dashboard";
 import ClientWorkouts from "@/pages/client-workouts";
 import ClientDiet from "@/pages/client-diet";
 import ClientSessions from "@/pages/client-sessions";
+import ClientHistory from "@/pages/client-history";
+import ClientProfile from "@/pages/client-profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,10 +29,13 @@ function Router() {
       <Route path="/admin/diet" component={AdminDiet} />
       <Route path="/admin/sessions" component={AdminSessions} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
+      <Route path="/admin/revenue" component={AdminRevenue} />
       <Route path="/client" component={ClientDashboard} />
       <Route path="/client/workouts" component={ClientWorkouts} />
       <Route path="/client/diet" component={ClientDiet} />
       <Route path="/client/sessions" component={ClientSessions} />
+      <Route path="/client/history" component={ClientHistory} />
+      <Route path="/client/profile" component={ClientProfile} />
       <Route component={NotFound} />
     </Switch>
   );

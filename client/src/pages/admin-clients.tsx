@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ClientDetailModal } from "@/components/client-detail-modal";
+import { AddClientModal } from "@/components/add-client-modal";
 import { Search, UserPlus, Mail, Phone, Calendar } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { useState } from "react";
 export default function AdminClients() {
   const style = { "--sidebar-width": "16rem" };
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const clients = [
@@ -57,7 +59,7 @@ export default function AdminClients() {
                     data-testid="input-search-clients"
                   />
                 </div>
-                <Button data-testid="button-add-client">
+                <Button onClick={() => setShowAddModal(true)} data-testid="button-add-client">
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add Client
                 </Button>
@@ -136,6 +138,11 @@ export default function AdminClients() {
           client={selectedClient}
         />
       )}
+
+      <AddClientModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+      />
     </SidebarProvider>
   );
 }

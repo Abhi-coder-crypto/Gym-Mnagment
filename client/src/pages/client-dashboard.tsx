@@ -4,8 +4,10 @@ import { StatCard } from "@/components/stat-card";
 import { VideoCard } from "@/components/video-card";
 import { LiveSessionCard } from "@/components/live-session-card";
 import { ProgressTracker } from "@/components/progress-tracker";
+import { AchievementsWidget } from "@/components/achievements-widget";
 import { VideoPlayerModal } from "@/components/video-player-modal";
-import { Dumbbell, Flame, Trophy, Calendar, Video, UtensilsCrossed, User } from "lucide-react";
+import { NotificationCenter } from "@/components/notification-center";
+import { Dumbbell, Flame, Trophy, Calendar, Video, UtensilsCrossed, User, History } from "lucide-react";
 import strengthImage from "@assets/generated_images/Strength_training_video_thumbnail_e7f2ebd6.png";
 import yogaImage from "@assets/generated_images/Yoga_class_video_thumbnail_a8a89f8b.png";
 import cardioImage from "@assets/generated_images/Cardio_workout_video_thumbnail_2c386154.png";
@@ -53,11 +55,16 @@ export default function ClientDashboard() {
                   <Calendar className="h-4 w-4 mr-2" />
                   Live Sessions
                 </Button>
+                <Button variant="ghost" onClick={() => setLocation("/client/history")} data-testid="link-history">
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </Button>
               </nav>
             </div>
             <div className="flex items-center gap-3">
+              <NotificationCenter />
               <ThemeToggle />
-              <Button variant="ghost" size="icon" data-testid="button-profile">
+              <Button variant="ghost" size="icon" onClick={() => setLocation("/client/profile")} data-testid="button-profile">
                 <User className="h-5 w-5" />
               </Button>
             </div>
@@ -70,9 +77,10 @@ export default function ClientDashboard() {
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, John!</h1>
-              <p className="text-muted-foreground mt-1">
-                You're on the <Badge className="bg-chart-2">Premium Plan</Badge>
-              </p>
+              <div className="text-muted-foreground mt-1 flex items-center gap-2">
+                <span>You're on the</span>
+                <Badge className="bg-chart-2">Premium Plan</Badge>
+              </div>
             </div>
             <Button data-testid="button-start-workout">
               <Dumbbell className="h-4 w-4 mr-2" />
@@ -139,8 +147,9 @@ export default function ClientDashboard() {
               </div>
             </div>
 
-            <div>
+            <div className="space-y-6">
               <ProgressTracker />
+              <AchievementsWidget />
             </div>
           </div>
         </div>

@@ -85,9 +85,10 @@ export default function ClientDiet() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-display font-bold tracking-tight">Your Diet Plan</h1>
-              <p className="text-muted-foreground mt-1">
-                Personalized meal plan - <Badge className="bg-chart-2">Premium Plan</Badge>
-              </p>
+              <div className="text-muted-foreground mt-1 flex items-center gap-2">
+                <span>Personalized meal plan -</span>
+                <Badge className="bg-chart-2">Premium Plan</Badge>
+              </div>
             </div>
           </div>
 

@@ -5,6 +5,8 @@ import {
   UtensilsCrossed,
   Calendar,
   BarChart3,
+  DollarSign,
+  Home,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +27,7 @@ const menuItems = [
   { title: "Diet Plans", icon: UtensilsCrossed, url: "/admin/diet" },
   { title: "Live Sessions", icon: Calendar, url: "/admin/sessions" },
   { title: "Analytics", icon: BarChart3, url: "/admin/analytics" },
+  { title: "Revenue", icon: DollarSign, url: "/admin/revenue" },
 ];
 
 export function AdminSidebar() {
@@ -39,6 +42,14 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild data-testid="link-home">
+                  <Link href="/">
+                    <Home />
+                    <span>Home</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
