@@ -13,11 +13,27 @@ import yogaImage from "@assets/generated_images/Yoga_class_video_thumbnail_a8a89
 import cardioImage from "@assets/generated_images/Cardio_workout_video_thumbnail_2c386154.png";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ClientDashboard() {
   const [, setLocation] = useLocation();
   const [videoModal, setVideoModal] = useState({ open: false, title: "", category: "", duration: "", thumbnail: "" });
+  const [clientId, setClientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem('clientId');
+    if (!id) {
+      setLocation('/client-access');
+    } else {
+      setClientId(id);
+    }
+  }, [setLocation]);
+
+  const { data: client } = useQuery<any>({
+    queryKey: ['/api/clients', clientId],
+    enabled: !!clientId,
+  });
 
   const videos = [
     { id: 1, title: "Full Body Strength Training", category: "Strength", duration: "45 min", thumbnail: strengthImage },
@@ -80,10 +96,10 @@ export default function ClientDashboard() {
         <div className="container mx-auto px-6 space-y-8">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, John!</h1>
+              <h1 className="text-3xl font-display font-bold tracking-tight">Welcome back, {client?.name?.split(' ')[0] || 'Guest'}!</h1>
               <div className="text-muted-foreground mt-1 flex items-center gap-2">
                 <span>You're on the</span>
-                <Badge className="bg-chart-2">Premium Plan</Badge>
+                <Badge className="bg-chart-2">{client?.packageId?.name || 'No'} Plan</Badge>
               </div>
             </div>
             <Button data-testid="button-start-workout">

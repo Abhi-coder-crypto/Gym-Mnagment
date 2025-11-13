@@ -10,9 +10,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, Video, UtensilsCrossed, Calendar, User, Mail, Phone, MapPin, CreditCard } from "lucide-react";
 import { useLocation } from "wouter";
 import { BodyCompositionCalculator } from "@/components/body-composition-calculator";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export default function ClientProfile() {
   const [, setLocation] = useLocation();
+  const [clientId, setClientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem('clientId');
+    if (!id) {
+      setLocation('/client-access');
+    } else {
+      setClientId(id);
+    }
+  }, [setLocation]);
+
+  const { data: client } = useQuery<any>({
+    queryKey: ['/api/clients', clientId],
+    enabled: !!clientId,
+  });
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (!client) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -58,14 +88,14 @@ export default function ClientProfile() {
           <div className="flex items-center gap-6">
             <Avatar className="h-24 w-24">
               <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                JD
+                {getInitials(client.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h1 className="text-3xl font-display font-bold tracking-tight">John Doe</h1>
-              <p className="text-muted-foreground mt-1">Member since Nov 10, 2025</p>
+              <h1 className="text-3xl font-display font-bold tracking-tight">{client.name}</h1>
+              <p className="text-muted-foreground mt-1">Member since {new Date(client.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge className="bg-chart-2">Premium Plan</Badge>
+                <Badge className="bg-chart-2">{client.packageId?.name || 'No'} Plan</Badge>
                 <Badge variant="outline" className="bg-chart-3 text-white">Active</Badge>
               </div>
             </div>
@@ -86,28 +116,22 @@ export default function ClientProfile() {
                   <CardTitle>Contact Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="John" data-testid="input-first-name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Doe" data-testid="input-last-name" />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" defaultValue={client.name} data-testid="input-full-name" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="email" className="pl-10" defaultValue="john@example.com" data-testid="input-email" />
+                      <Input id="email" className="pl-10" defaultValue={client.email || ''} data-testid="input-email" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="phone" className="pl-10" defaultValue="+1 234-567-8901" data-testid="input-phone" />
+                      <Input id="phone" className="pl-10" defaultValue={client.phone} data-testid="input-phone" />
                     </div>
                   </div>
                   <div className="space-y-2">
