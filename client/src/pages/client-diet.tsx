@@ -4,42 +4,43 @@ import { DietPlanCard } from "@/components/diet-plan-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export default function ClientDiet() {
   const [, setLocation] = useLocation();
+  const [clientId, setClientId] = useState<string | null>(null);
 
-  const weeklyPlan = [
+  useEffect(() => {
+    const id = localStorage.getItem('clientId');
+    if (!id) {
+      setLocation('/client-access');
+    } else {
+      setClientId(id);
+    }
+  }, [setLocation]);
+
+  // Fetch diet plans for the logged-in client
+  const { data: dietPlans, isLoading } = useQuery<any[]>({
+    queryKey: ['/api/diet-plans/client', clientId],
+    enabled: !!clientId,
+  });
+
+  const currentPlan = dietPlans?.[0]; // Get the first/current diet plan
+
+  // Convert backend meals object to weekly plan format for UI
+  const weeklyPlan = currentPlan?.meals ? [
     {
-      day: "Monday",
+      day: "Daily Plan",
       meals: [
-        { time: "7:00 AM", name: "Protein Oatmeal Bowl", calories: 420, protein: 25, carbs: 55, fats: 12 },
-        { time: "12:00 PM", name: "Grilled Chicken Salad", calories: 550, protein: 45, carbs: 35, fats: 18 },
-        { time: "3:00 PM", name: "Greek Yogurt & Berries", calories: 220, protein: 18, carbs: 28, fats: 5 },
-        { time: "7:00 PM", name: "Salmon with Quinoa", calories: 680, protein: 42, carbs: 52, fats: 28 },
+        { time: "7:00 AM", ...currentPlan.meals.breakfast },
+        { time: "12:00 PM", ...currentPlan.meals.lunch },
+        { time: "3:00 PM", ...currentPlan.meals.snack },
+        { time: "7:00 PM", ...currentPlan.meals.dinner },
       ],
-      totalCalories: 1870,
+      totalCalories: currentPlan.targetCalories,
     },
-    {
-      day: "Tuesday",
-      meals: [
-        { time: "7:00 AM", name: "Scrambled Eggs & Toast", calories: 380, protein: 22, carbs: 42, fats: 14 },
-        { time: "12:00 PM", name: "Turkey Wrap", calories: 520, protein: 38, carbs: 48, fats: 16 },
-        { time: "3:00 PM", name: "Protein Shake", calories: 250, protein: 30, carbs: 20, fats: 6 },
-        { time: "7:00 PM", name: "Chicken Stir Fry", calories: 620, protein: 46, carbs: 58, fats: 22 },
-      ],
-      totalCalories: 1770,
-    },
-    {
-      day: "Wednesday",
-      meals: [
-        { time: "7:00 AM", name: "Smoothie Bowl", calories: 400, protein: 20, carbs: 62, fats: 10 },
-        { time: "12:00 PM", name: "Tuna Salad", calories: 480, protein: 42, carbs: 28, fats: 22 },
-        { time: "3:00 PM", name: "Almonds & Apple", calories: 200, protein: 8, carbs: 24, fats: 12 },
-        { time: "7:00 PM", name: "Beef & Vegetables", calories: 720, protein: 48, carbs: 45, fats: 32 },
-      ],
-      totalCalories: 1800,
-    },
-  ];
+  ] : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,45 +58,61 @@ export default function ClientDiet() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display">Nutrition Goals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <p className="text-3xl font-bold font-display text-primary">1,850</p>
-                  <p className="text-sm text-muted-foreground mt-1">Daily Calories</p>
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Loading your diet plan...
+              </CardContent>
+            </Card>
+          ) : currentPlan ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display">{currentPlan.name || 'Nutrition Goals'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold font-display text-primary">{currentPlan.targetCalories?.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Daily Calories</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold font-display text-chart-1">{currentPlan.protein}g</p>
+                    <p className="text-sm text-muted-foreground mt-1">Protein</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold font-display text-chart-2">{currentPlan.carbs}g</p>
+                    <p className="text-sm text-muted-foreground mt-1">Carbs</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold font-display text-chart-3">{currentPlan.fats}g</p>
+                    <p className="text-sm text-muted-foreground mt-1">Fats</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold font-display text-chart-1">140g</p>
-                  <p className="text-sm text-muted-foreground mt-1">Protein</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold font-display text-chart-2">180g</p>
-                  <p className="text-sm text-muted-foreground mt-1">Carbs</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold font-display text-chart-3">68g</p>
-                  <p className="text-sm text-muted-foreground mt-1">Fats</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No diet plan assigned yet. Contact your trainer to get started!
+              </CardContent>
+            </Card>
+          )}
 
-          <div className="space-y-6">
-            <h2 className="text-2xl font-display font-bold tracking-tight">Weekly Meal Plan</h2>
-            <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {weeklyPlan.map((day) => (
-                <DietPlanCard
-                  key={day.day}
-                  day={day.day}
-                  meals={day.meals}
-                  totalCalories={day.totalCalories}
-                />
-              ))}
+          {currentPlan && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-display font-bold tracking-tight">Daily Meal Plan</h2>
+              <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {weeklyPlan.map((day) => (
+                  <DietPlanCard
+                    key={day.day}
+                    day={day.day}
+                    meals={day.meals}
+                    totalCalories={day.totalCalories}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
