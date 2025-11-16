@@ -34,6 +34,8 @@ import ClientMonthlyReports from "@/pages/client-monthly-reports";
 import ClientGoals from "@/pages/client-goals";
 import AnnouncementsPage from "@/pages/announcements";
 import SupportTicketsPage from "@/pages/support-tickets";
+import TrainerMessaging from "@/pages/trainer-messaging";
+import CommunityForum from "@/pages/community-forum";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -70,6 +72,8 @@ function Router() {
       <Route path="/client/goals" component={ClientGoals} />
       <Route path="/client/announcements" component={AnnouncementsPage} />
       <Route path="/client/support-tickets" component={SupportTicketsPage} />
+      <Route path="/client/messages" component={TrainerMessaging} />
+      <Route path="/client/forum" component={CommunityForum} />
       <Route component={NotFound} />
     </Switch>
   );
