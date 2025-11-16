@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Utensils, 
   Droplet, 
@@ -26,6 +27,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ClientDiet() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [clientId, setClientId] = useState<string | null>(null);
   const [waterIntake, setWaterIntake] = useState(0);
   const [selectedMeals, setSelectedMeals] = useState<string[]>([]);
@@ -156,6 +158,34 @@ export default function ClientDiet() {
     setSelectedMeals(prev => 
       prev.includes(mealId) ? prev.filter(id => id !== mealId) : [...prev, mealId]
     );
+  };
+
+  const handleExportGroceryList = () => {
+    const uncheckedItems: string[] = [];
+    groceryList.forEach((category, catIndex) => {
+      category.items.forEach((item, itemIndex) => {
+        if (!selectedMeals.includes(`${catIndex}-${itemIndex}`)) {
+          uncheckedItems.push(`${category.category}: ${item}`);
+        }
+      });
+    });
+
+    const listText = uncheckedItems.length > 0 
+      ? `Shopping List:\n\n${uncheckedItems.join('\n')}`
+      : 'All items are checked off!';
+
+    navigator.clipboard.writeText(listText).then(() => {
+      toast({
+        title: "Shopping List Exported",
+        description: "Your grocery list has been copied to clipboard!",
+      });
+    }).catch(() => {
+      toast({
+        title: "Export Failed",
+        description: "Could not copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    });
   };
 
   return (
@@ -514,7 +544,7 @@ export default function ClientDiet() {
                             </div>
                           </div>
                         ))}
-                        <Button className="w-full" data-testid="button-export-grocery">
+                        <Button className="w-full" onClick={handleExportGroceryList} data-testid="button-export-grocery">
                           <ShoppingCart className="h-4 w-4 mr-2" />
                           Export Shopping List
                         </Button>
