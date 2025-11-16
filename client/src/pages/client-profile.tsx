@@ -9,17 +9,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Phone, MapPin, CreditCard, FileText, Download, Globe, Shield, Heart, Activity } from "lucide-react";
+import { Mail, Phone, MapPin, CreditCard, FileText, Download, Globe, Shield, Heart, Activity, Moon, Sun } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/language-context";
 
 export default function ClientProfile() {
   const [, setLocation] = useLocation();
   const [clientId, setClientId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { language: currentLanguage, setLanguage } = useLanguage();
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -84,12 +89,23 @@ export default function ClientProfile() {
     }
   }, [client]);
 
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newMode);
+  };
+
   const updateClientMutation = useMutation({
     mutationFn: async (data: any) => {
       return await apiRequest('PATCH', `/api/clients/${clientId}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId] });
+      // Sync language with provider if language was updated
+      if (variables.language) {
+        setLanguage(variables.language);
+      }
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -457,6 +473,30 @@ export default function ClientProfile() {
                       checked={formData.achievementNotifications}
                       onCheckedChange={(checked) => setFormData({...formData, achievementNotifications: checked})}
                       data-testid="switch-achievement-notifications"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                    Appearance
+                  </CardTitle>
+                  <CardDescription>Customize how FitPro looks to you</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">Dark Mode</p>
+                      <p className="text-sm text-muted-foreground">Switch between light and dark themes</p>
+                    </div>
+                    <Switch 
+                      id="darkMode"
+                      checked={darkMode}
+                      onCheckedChange={toggleDarkMode}
+                      data-testid="switch-dark-mode"
                     />
                   </div>
                 </CardContent>
