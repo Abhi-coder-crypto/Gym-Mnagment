@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationCenter } from "@/components/notification-center";
 import { CalculatorDialog } from "@/components/calculator-dialog";
+import { SessionReminders } from "@/components/session-reminders";
 import { Dumbbell, Calendar, Video, UtensilsCrossed, User, History, Image } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -83,6 +84,7 @@ export function ClientHeader({ currentPage }: ClientHeaderProps) {
           </div>
           <div className="flex items-center gap-3">
             <CalculatorDialog />
+            <SessionReminders />
             <NotificationCenter />
             <ThemeToggle />
             <Button 

@@ -22,6 +22,7 @@ import ClientHistory from "@/pages/client-history";
 import ClientWorkoutHistory from "@/pages/client-workout-history";
 import ClientProgressPhotos from "@/pages/client-progress-photos";
 import ClientProfile from "@/pages/client-profile";
+import SessionRoom from "@/pages/session-room";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/client/videos" component={ClientVideos} />
       <Route path="/client/diet" component={ClientDiet} />
       <Route path="/client/sessions" component={ClientSessions} />
+      <Route path="/session/:id" component={SessionRoom} />
       <Route path="/client/history" component={ClientHistory} />
       <Route path="/client/workout-history" component={ClientWorkoutHistory} />
       <Route path="/client/progress-photos" component={ClientProgressPhotos} />

@@ -6,6 +6,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
+import { setupWebSocket } from "./websocket";
 
 const app = express();
 
@@ -246,6 +247,10 @@ app.use((req, res, next) => {
 
   // Register all routes
   const server = await registerRoutes(app);
+
+  // Setup WebSocket for live chat
+  setupWebSocket(server);
+  log("🔌 WebSocket server initialized");
 
   // Global error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
