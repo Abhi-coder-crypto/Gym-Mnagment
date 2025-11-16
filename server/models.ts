@@ -78,6 +78,13 @@ export interface IDietPlan extends Document {
   carbs?: number;
   fats?: number;
   meals: any;
+  allergens?: string[];
+  waterIntakeGoal?: number;
+  supplements?: Array<{
+    name: string;
+    dosage: string;
+    timing: string;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -219,6 +226,13 @@ const DietPlanSchema = new Schema({
   carbs: Number,
   fats: Number,
   meals: { type: Schema.Types.Mixed, required: true },
+  allergens: [String],
+  waterIntakeGoal: Number,
+  supplements: [{
+    name: String,
+    dosage: String,
+    timing: String
+  }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
