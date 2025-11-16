@@ -47,6 +47,8 @@ export interface IVideo extends Document {
   thumbnail?: string;
   category: string;
   duration?: number;
+  intensity?: string;
+  trainer?: string;
   packageRequirement?: string;
   createdAt: Date;
 }
@@ -107,6 +109,29 @@ export interface IWorkoutSession extends Document {
   notes?: string;
 }
 
+export interface IVideoProgress extends Document {
+  clientId: string;
+  videoId: string;
+  watchedDuration: number;
+  totalDuration: number;
+  lastWatchedAt: Date;
+  completed: boolean;
+}
+
+export interface IVideoBookmark extends Document {
+  clientId: string;
+  videoId: string;
+  bookmarkedAt: Date;
+}
+
+export interface IProgressPhoto extends Document {
+  clientId: string;
+  photoUrl: string;
+  description?: string;
+  weight?: number;
+  uploadedAt: Date;
+}
+
 export interface IAchievement extends Document {
   clientId: string;
   type: string;
@@ -163,6 +188,8 @@ const VideoSchema = new Schema({
   thumbnail: String,
   category: { type: String, required: true },
   duration: Number,
+  intensity: String,
+  trainer: String,
   packageRequirement: { type: Schema.Types.ObjectId, ref: 'Package' },
   createdAt: { type: Date, default: Date.now },
 });
@@ -223,6 +250,29 @@ const WorkoutSessionSchema = new Schema({
   notes: String,
 });
 
+const VideoProgressSchema = new Schema({
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+  videoId: { type: Schema.Types.ObjectId, ref: 'Video', required: true },
+  watchedDuration: { type: Number, required: true, default: 0 },
+  totalDuration: { type: Number, required: true },
+  lastWatchedAt: { type: Date, default: Date.now },
+  completed: { type: Boolean, default: false },
+});
+
+const VideoBookmarkSchema = new Schema({
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+  videoId: { type: Schema.Types.ObjectId, ref: 'Video', required: true },
+  bookmarkedAt: { type: Date, default: Date.now },
+});
+
+const ProgressPhotoSchema = new Schema({
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+  photoUrl: { type: String, required: true },
+  description: String,
+  weight: Number,
+  uploadedAt: { type: Date, default: Date.now },
+});
+
 const AchievementSchema = new Schema({
   clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
   type: { type: String, required: true },
@@ -242,4 +292,7 @@ export const DietPlan = mongoose.model<IDietPlan>('DietPlan', DietPlanSchema);
 export const LiveSession = mongoose.model<ILiveSession>('LiveSession', LiveSessionSchema);
 export const SessionClient = mongoose.model<ISessionClient>('SessionClient', SessionClientSchema);
 export const WorkoutSession = mongoose.model<IWorkoutSession>('WorkoutSession', WorkoutSessionSchema);
+export const VideoProgress = mongoose.model<IVideoProgress>('VideoProgress', VideoProgressSchema);
+export const VideoBookmark = mongoose.model<IVideoBookmark>('VideoBookmark', VideoBookmarkSchema);
+export const ProgressPhoto = mongoose.model<IProgressPhoto>('ProgressPhoto', ProgressPhotoSchema);
 export const Achievement = mongoose.model<IAchievement>('Achievement', AchievementSchema);

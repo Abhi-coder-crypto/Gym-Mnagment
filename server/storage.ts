@@ -10,6 +10,9 @@ import {
   LiveSession,
   SessionClient,
   WorkoutSession,
+  VideoProgress,
+  VideoBookmark,
+  ProgressPhoto,
   Achievement,
   type IPackage,
   type IClient,
@@ -21,6 +24,9 @@ import {
   type ILiveSession,
   type ISessionClient,
   type IWorkoutSession,
+  type IVideoProgress,
+  type IVideoBookmark,
+  type IProgressPhoto,
   type IAchievement,
 } from './models';
 
@@ -51,11 +57,34 @@ export interface IStorage {
   updateVideo(id: string, data: Partial<IVideo>): Promise<IVideo | null>;
   deleteVideo(id: string): Promise<boolean>;
   getVideosByPackage(packageId: string): Promise<IVideo[]>;
+  searchVideos(filters: {
+    category?: string;
+    duration?: { min?: number; max?: number };
+    intensity?: string;
+    trainer?: string;
+    search?: string;
+  }): Promise<IVideo[]>;
   
   // Client Video methods
   getClientVideos(clientId: string): Promise<IVideo[]>;
   assignVideoToClient(clientId: string, videoId: string): Promise<IClientVideo>;
   removeVideoFromClient(clientId: string, videoId: string): Promise<boolean>;
+  
+  // Video Progress methods
+  getVideoProgress(clientId: string, videoId: string): Promise<IVideoProgress | null>;
+  updateVideoProgress(clientId: string, videoId: string, watchedDuration: number, totalDuration: number): Promise<IVideoProgress>;
+  getContinueWatching(clientId: string): Promise<any[]>;
+  
+  // Video Bookmark methods
+  getVideoBookmarks(clientId: string): Promise<any[]>;
+  createVideoBookmark(clientId: string, videoId: string): Promise<IVideoBookmark>;
+  deleteVideoBookmark(clientId: string, videoId: string): Promise<boolean>;
+  isVideoBookmarked(clientId: string, videoId: string): Promise<boolean>;
+  
+  // Progress Photo methods
+  getProgressPhotos(clientId: string): Promise<IProgressPhoto[]>;
+  createProgressPhoto(data: Partial<IProgressPhoto>): Promise<IProgressPhoto>;
+  deleteProgressPhoto(id: string): Promise<boolean>;
   
   // Workout Plan methods
   getClientWorkoutPlans(clientId: string): Promise<IWorkoutPlan[]>;
@@ -203,6 +232,140 @@ export class MongoStorage implements IStorage {
 
   async removeVideoFromClient(clientId: string, videoId: string): Promise<boolean> {
     const result = await ClientVideo.findOneAndDelete({ clientId, videoId });
+    return !!result;
+  }
+
+  async searchVideos(filters: {
+    category?: string;
+    duration?: { min?: number; max?: number };
+    intensity?: string;
+    trainer?: string;
+    search?: string;
+  }): Promise<IVideo[]> {
+    const query: any = {};
+    
+    if (filters.category) {
+      query.category = filters.category;
+    }
+    
+    if (filters.intensity) {
+      query.intensity = filters.intensity;
+    }
+    
+    if (filters.trainer) {
+      query.trainer = filters.trainer;
+    }
+    
+    if (filters.duration) {
+      query.duration = {};
+      if (filters.duration.min !== undefined) {
+        query.duration.$gte = filters.duration.min;
+      }
+      if (filters.duration.max !== undefined) {
+        query.duration.$lte = filters.duration.max;
+      }
+    }
+    
+    if (filters.search) {
+      query.$or = [
+        { title: { $regex: filters.search, $options: 'i' } },
+        { description: { $regex: filters.search, $options: 'i' } },
+      ];
+    }
+    
+    return await Video.find(query).populate('packageRequirement').sort({ createdAt: -1 });
+  }
+
+  // Video Progress methods
+  async getVideoProgress(clientId: string, videoId: string): Promise<IVideoProgress | null> {
+    return await VideoProgress.findOne({ clientId, videoId });
+  }
+
+  async updateVideoProgress(
+    clientId: string,
+    videoId: string,
+    watchedDuration: number,
+    totalDuration: number
+  ): Promise<IVideoProgress> {
+    const completed = watchedDuration >= totalDuration * 0.9;
+    
+    const progress = await VideoProgress.findOneAndUpdate(
+      { clientId, videoId },
+      {
+        watchedDuration,
+        totalDuration,
+        lastWatchedAt: new Date(),
+        completed,
+      },
+      { upsert: true, new: true }
+    );
+    
+    return progress;
+  }
+
+  async getContinueWatching(clientId: string): Promise<any[]> {
+    const progressList = await VideoProgress.find({
+      clientId,
+      completed: false,
+      watchedDuration: { $gt: 0 },
+    })
+      .populate('videoId')
+      .sort({ lastWatchedAt: -1 })
+      .limit(10);
+    
+    return progressList.map(p => ({
+      video: p.videoId,
+      watchedDuration: p.watchedDuration,
+      totalDuration: p.totalDuration,
+      lastWatchedAt: p.lastWatchedAt,
+      progressPercent: Math.round((p.watchedDuration / p.totalDuration) * 100),
+    }));
+  }
+
+  // Video Bookmark methods
+  async getVideoBookmarks(clientId: string): Promise<any[]> {
+    const bookmarks = await VideoBookmark.find({ clientId })
+      .populate('videoId')
+      .sort({ bookmarkedAt: -1 });
+    
+    return bookmarks.map(b => ({
+      ...b.toObject(),
+      video: b.videoId,
+    }));
+  }
+
+  async createVideoBookmark(clientId: string, videoId: string): Promise<IVideoBookmark> {
+    const existing = await VideoBookmark.findOne({ clientId, videoId });
+    if (existing) {
+      return existing;
+    }
+    
+    const bookmark = new VideoBookmark({ clientId, videoId });
+    return await bookmark.save();
+  }
+
+  async deleteVideoBookmark(clientId: string, videoId: string): Promise<boolean> {
+    const result = await VideoBookmark.findOneAndDelete({ clientId, videoId });
+    return !!result;
+  }
+
+  async isVideoBookmarked(clientId: string, videoId: string): Promise<boolean> {
+    const bookmark = await VideoBookmark.findOne({ clientId, videoId });
+    return !!bookmark;
+  }
+
+  // Progress Photo methods
+  async getProgressPhotos(clientId: string): Promise<IProgressPhoto[]> {
+    return await ProgressPhoto.find({ clientId }).sort({ uploadedAt: -1 });
+  }
+
+  async createProgressPhoto(data: Partial<IProgressPhoto>): Promise<IProgressPhoto> {
+    const photo = new ProgressPhoto(data);
+    return await photo.save();
+  }
+
+  async deleteProgressPhoto(id: string): Promise<boolean> {
+    const result = await ProgressPhoto.findByIdAndDelete(id);
     return !!result;
   }
 
