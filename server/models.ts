@@ -96,6 +96,10 @@ export interface ILiveSession extends Document {
   duration: number;
   meetingLink?: string;
   status: string;
+  sessionType?: string;
+  trainer?: string;
+  maxParticipants?: number;
+  currentParticipants?: number;
   createdAt: Date;
 }
 
@@ -244,6 +248,10 @@ const LiveSessionSchema = new Schema({
   duration: { type: Number, required: true },
   meetingLink: String,
   status: { type: String, default: 'scheduled' },
+  sessionType: String,
+  trainer: String,
+  maxParticipants: { type: Number, default: 15 },
+  currentParticipants: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
