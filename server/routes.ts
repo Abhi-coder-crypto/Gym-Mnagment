@@ -811,6 +811,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Diet Plan Template routes
+  app.get("/api/diet-plan-templates", async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const templates = await storage.getDietPlanTemplates(category);
+      res.json(templates);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/diet-plans/:id/clone", async (req, res) => {
+    try {
+      const { clientId } = req.body;
+      const clonedPlan = await storage.cloneDietPlan(req.params.id, clientId);
+      res.json(clonedPlan);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/diet-plans-with-assignments", async (_req, res) => {
+    try {
+      const plans = await storage.getAllDietPlansWithAssignments();
+      res.json(plans);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Meal routes
+  app.get("/api/meals", async (req, res) => {
+    try {
+      const filters = {
+        category: req.query.category as string | undefined,
+        mealType: req.query.mealType as string | undefined,
+        search: req.query.search as string | undefined,
+      };
+      const meals = await storage.getAllMeals(filters);
+      res.json(meals);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/meals/:id", async (req, res) => {
+    try {
+      const meal = await storage.getMeal(req.params.id);
+      if (!meal) {
+        return res.status(404).json({ message: "Meal not found" });
+      }
+      res.json(meal);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/meals", async (req, res) => {
+    try {
+      const meal = await storage.createMeal(req.body);
+      res.json(meal);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/meals/:id", async (req, res) => {
+    try {
+      const meal = await storage.updateMeal(req.params.id, req.body);
+      if (!meal) {
+        return res.status(404).json({ message: "Meal not found" });
+      }
+      res.json(meal);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/meals/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteMeal(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Meal not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Live Session routes
   app.get("/api/sessions", async (_req, res) => {
     try {
