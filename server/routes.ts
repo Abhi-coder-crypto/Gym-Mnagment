@@ -1514,7 +1514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
 
         // Calculate revenue for clients active this month
-        const monthRevenue = clientsUpToMonth.reduce((sum, client) => {
+        const monthRevenue = clientsUpToMonth.reduce((sum, client: any) => {
           const packageId = typeof client.packageId === 'object' ? client.packageId._id : client.packageId;
           const pkg = packageById[packageId?.toString()];
           return sum + (pkg?.price || 0);
