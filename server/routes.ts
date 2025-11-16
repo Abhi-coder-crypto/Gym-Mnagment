@@ -332,6 +332,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Video Search and Filtering
+  app.post("/api/videos/search", async (req, res) => {
+    try {
+      const { category, duration, intensity, trainer, search } = req.body;
+      const videos = await storage.searchVideos({
+        category,
+        duration,
+        intensity,
+        trainer,
+        search,
+      });
+      res.json(videos);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Video Progress routes (Continue Watching)
+  app.get("/api/clients/:clientId/video-progress/:videoId", async (req, res) => {
+    try {
+      const progress = await storage.getVideoProgress(req.params.clientId, req.params.videoId);
+      res.json(progress);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/clients/:clientId/video-progress/:videoId", async (req, res) => {
+    try {
+      const { watchedDuration, totalDuration } = req.body;
+      const progress = await storage.updateVideoProgress(
+        req.params.clientId,
+        req.params.videoId,
+        watchedDuration,
+        totalDuration
+      );
+      res.json(progress);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/clients/:clientId/continue-watching", async (req, res) => {
+    try {
+      const videos = await storage.getContinueWatching(req.params.clientId);
+      res.json(videos);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Video Bookmark routes
+  app.get("/api/clients/:clientId/bookmarks", async (req, res) => {
+    try {
+      const bookmarks = await storage.getVideoBookmarks(req.params.clientId);
+      res.json(bookmarks);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/clients/:clientId/bookmarks/:videoId", async (req, res) => {
+    try {
+      const bookmark = await storage.createVideoBookmark(req.params.clientId, req.params.videoId);
+      res.json(bookmark);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/clients/:clientId/bookmarks/:videoId", async (req, res) => {
+    try {
+      const success = await storage.deleteVideoBookmark(req.params.clientId, req.params.videoId);
+      if (!success) {
+        return res.status(404).json({ message: "Bookmark not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/clients/:clientId/bookmarks/:videoId/check", async (req, res) => {
+    try {
+      const isBookmarked = await storage.isVideoBookmarked(req.params.clientId, req.params.videoId);
+      res.json({ isBookmarked });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Progress Photo routes
+  app.get("/api/clients/:clientId/progress-photos", async (req, res) => {
+    try {
+      const photos = await storage.getProgressPhotos(req.params.clientId);
+      res.json(photos);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/clients/:clientId/progress-photos", async (req, res) => {
+    try {
+      const { photoUrl, description, weight } = req.body;
+      const photo = await storage.createProgressPhoto({
+        clientId: req.params.clientId,
+        photoUrl,
+        description,
+        weight,
+      });
+      res.json(photo);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/progress-photos/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteProgressPhoto(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Progress photo not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Workout Plan routes
   app.get("/api/workout-plans/:clientId", async (req, res) => {
     try {
