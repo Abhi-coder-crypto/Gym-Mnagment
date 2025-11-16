@@ -10,6 +10,7 @@ import {
   Meal,
   LiveSession,
   SessionClient,
+  SessionWaitlist,
   WorkoutSession,
   VideoProgress,
   VideoBookmark,
@@ -27,6 +28,7 @@ import {
   type IMeal,
   type ILiveSession,
   type ISessionClient,
+  type ISessionWaitlist,
   type IWorkoutSession,
   type IVideoProgress,
   type IVideoBookmark,
@@ -131,11 +133,21 @@ export interface IStorage {
   updateSession(id: string, data: Partial<ILiveSession>): Promise<ILiveSession | null>;
   deleteSession(id: string): Promise<boolean>;
   getClientSessions(clientId: string): Promise<ILiveSession[]>;
+  getSessionsByDateRange(startDate: Date, endDate: Date): Promise<ILiveSession[]>;
+  cancelSession(id: string): Promise<ILiveSession | null>;
+  createRecurringSessions(baseData: Partial<ILiveSession>, pattern: string, days: string[], endDate: Date): Promise<ILiveSession[]>;
   
-  // Session Client methods
+  // Session Client methods (Booking)
   assignClientToSession(sessionId: string, clientId: string): Promise<ISessionClient>;
   removeClientFromSession(sessionId: string, clientId: string): Promise<boolean>;
   getSessionClients(sessionId: string): Promise<IClient[]>;
+  bookSessionSpot(sessionId: string, clientId: string): Promise<{ success: boolean; message: string; booking?: ISessionClient }>;
+  
+  // Session Waitlist methods
+  addToWaitlist(sessionId: string, clientId: string): Promise<{ success: boolean; message: string; position?: number }>;
+  removeFromWaitlist(sessionId: string, clientId: string): Promise<boolean>;
+  getSessionWaitlist(sessionId: string): Promise<any[]>;
+  getClientWaitlist(clientId: string): Promise<any[]>;
   
   // Workout Session methods
   getClientWorkoutSessions(clientId: string): Promise<IWorkoutSession[]>;
@@ -659,6 +671,159 @@ export class MongoStorage implements IStorage {
   async getSessionClients(sessionId: string): Promise<IClient[]> {
     const sessionClients = await SessionClient.find({ sessionId }).populate('clientId');
     return sessionClients.map(sc => sc.clientId as any);
+  }
+
+  async getSessionsByDateRange(startDate: Date, endDate: Date): Promise<ILiveSession[]> {
+    return await LiveSession.find({
+      scheduledAt: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    }).sort({ scheduledAt: 1 });
+  }
+
+  async cancelSession(id: string): Promise<ILiveSession | null> {
+    return await LiveSession.findByIdAndUpdate(
+      id,
+      { status: 'cancelled', updatedAt: new Date() },
+      { new: true }
+    );
+  }
+
+  async createRecurringSessions(
+    baseData: Partial<ILiveSession>,
+    pattern: string,
+    days: string[],
+    endDate: Date
+  ): Promise<ILiveSession[]> {
+    const sessions: ILiveSession[] = [];
+    
+    // Create parent session
+    const parentSession = await this.createSession({
+      ...baseData,
+      isRecurring: true,
+      recurringPattern: pattern,
+      recurringDays: days,
+      recurringEndDate: endDate,
+    });
+    
+    sessions.push(parentSession);
+    
+    // Generate child sessions based on pattern
+    const startDate = new Date(baseData.scheduledAt!);
+    const currentDate = new Date(startDate);
+    
+    // Weekly pattern
+    if (pattern === 'weekly') {
+      while (currentDate <= endDate) {
+        currentDate.setDate(currentDate.getDate() + 7);
+        
+        if (currentDate <= endDate) {
+          const childSession = await this.createSession({
+            ...baseData,
+            scheduledAt: new Date(currentDate),
+            isRecurring: false,
+            parentSessionId: parentSession._id.toString(),
+          });
+          sessions.push(childSession);
+        }
+      }
+    }
+    
+    return sessions;
+  }
+
+  async bookSessionSpot(sessionId: string, clientId: string): Promise<{ success: boolean; message: string; booking?: ISessionClient }> {
+    const session = await LiveSession.findById(sessionId);
+    
+    if (!session) {
+      return { success: false, message: 'Session not found' };
+    }
+    
+    // Check if already booked
+    const existingBooking = await SessionClient.findOne({ sessionId, clientId });
+    if (existingBooking) {
+      return { success: false, message: 'Already booked for this session' };
+    }
+    
+    // Check capacity
+    if (session.currentCapacity >= session.maxCapacity) {
+      return { success: false, message: 'Session is full' };
+    }
+    
+    // Create booking
+    const booking = new SessionClient({ sessionId, clientId });
+    await booking.save();
+    
+    // Update capacity
+    await LiveSession.findByIdAndUpdate(sessionId, {
+      currentCapacity: session.currentCapacity + 1,
+      updatedAt: new Date()
+    });
+    
+    return { success: true, message: 'Booking successful', booking };
+  }
+
+  // Session Waitlist methods
+  async addToWaitlist(sessionId: string, clientId: string): Promise<{ success: boolean; message: string; position?: number }> {
+    // Check if already in waitlist
+    const existing = await SessionWaitlist.findOne({ sessionId, clientId });
+    if (existing) {
+      return { success: false, message: 'Already in waitlist' };
+    }
+    
+    // Get current waitlist count for position
+    const waitlistCount = await SessionWaitlist.countDocuments({ sessionId });
+    const position = waitlistCount + 1;
+    
+    const waitlistEntry = new SessionWaitlist({
+      sessionId,
+      clientId,
+      position
+    });
+    await waitlistEntry.save();
+    
+    return { success: true, message: 'Added to waitlist', position };
+  }
+
+  async removeFromWaitlist(sessionId: string, clientId: string): Promise<boolean> {
+    const result = await SessionWaitlist.findOneAndDelete({ sessionId, clientId });
+    
+    if (result) {
+      // Reorder remaining waitlist entries
+      const remainingEntries = await SessionWaitlist.find({ sessionId }).sort({ position: 1 });
+      for (let i = 0; i < remainingEntries.length; i++) {
+        await SessionWaitlist.findByIdAndUpdate(remainingEntries[i]._id, { position: i + 1 });
+      }
+    }
+    
+    return !!result;
+  }
+
+  async getSessionWaitlist(sessionId: string): Promise<any[]> {
+    const waitlistEntries = await SessionWaitlist.find({ sessionId })
+      .populate('clientId')
+      .sort({ position: 1 });
+    
+    return waitlistEntries.map(entry => ({
+      id: entry._id,
+      position: entry.position,
+      client: entry.clientId,
+      addedAt: entry.addedAt
+    }));
+  }
+
+  async getClientWaitlist(clientId: string): Promise<any[]> {
+    const waitlistEntries = await SessionWaitlist.find({ clientId })
+      .populate('sessionId')
+      .sort({ addedAt: -1 });
+    
+    return waitlistEntries.map(entry => ({
+      id: entry._id,
+      position: entry.position,
+      session: entry.sessionId,
+      addedAt: entry.addedAt
+    }));
   }
 
   // Workout Session methods

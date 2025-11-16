@@ -147,21 +147,35 @@ export interface IMeal extends Document {
 export interface ILiveSession extends Document {
   title: string;
   description?: string;
+  sessionType: string;
   scheduledAt: Date;
   duration: number;
   meetingLink?: string;
+  trainerName?: string;
+  maxCapacity: number;
+  currentCapacity: number;
   status: string;
-  sessionType?: string;
-  trainer?: string;
-  maxParticipants?: number;
-  currentParticipants?: number;
+  isRecurring: boolean;
+  recurringPattern?: string;
+  recurringDays?: string[];
+  recurringEndDate?: Date;
+  parentSessionId?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ISessionClient extends Document {
   sessionId: string;
   clientId: string;
   attended: boolean;
+  bookedAt: Date;
+}
+
+export interface ISessionWaitlist extends Document {
+  sessionId: string;
+  clientId: string;
+  position: number;
+  addedAt: Date;
 }
 
 export interface IWorkoutSession extends Document {
@@ -354,21 +368,35 @@ const MealSchema = new Schema({
 const LiveSessionSchema = new Schema({
   title: { type: String, required: true },
   description: String,
+  sessionType: { type: String, required: true },
   scheduledAt: { type: Date, required: true },
   duration: { type: Number, required: true },
   meetingLink: String,
-  status: { type: String, default: 'scheduled' },
-  sessionType: String,
-  trainer: String,
-  maxParticipants: { type: Number, default: 15 },
-  currentParticipants: { type: Number, default: 0 },
+  trainerName: String,
+  maxCapacity: { type: Number, default: 15, required: true },
+  currentCapacity: { type: Number, default: 0, required: true },
+  status: { type: String, default: 'upcoming', required: true },
+  isRecurring: { type: Boolean, default: false, required: true },
+  recurringPattern: String,
+  recurringDays: [String],
+  recurringEndDate: Date,
+  parentSessionId: { type: Schema.Types.ObjectId, ref: 'LiveSession' },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const SessionClientSchema = new Schema({
   sessionId: { type: Schema.Types.ObjectId, ref: 'LiveSession', required: true },
   clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
   attended: { type: Boolean, default: false },
+  bookedAt: { type: Date, default: Date.now },
+});
+
+const SessionWaitlistSchema = new Schema({
+  sessionId: { type: Schema.Types.ObjectId, ref: 'LiveSession', required: true },
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+  position: { type: Number, required: true },
+  addedAt: { type: Date, default: Date.now },
 });
 
 const WorkoutSessionSchema = new Schema({
@@ -498,6 +526,7 @@ export const DietPlan = mongoose.model<IDietPlan>('DietPlan', DietPlanSchema);
 export const Meal = mongoose.model<IMeal>('Meal', MealSchema);
 export const LiveSession = mongoose.model<ILiveSession>('LiveSession', LiveSessionSchema);
 export const SessionClient = mongoose.model<ISessionClient>('SessionClient', SessionClientSchema);
+export const SessionWaitlist = mongoose.model<ISessionWaitlist>('SessionWaitlist', SessionWaitlistSchema);
 export const WorkoutSession = mongoose.model<IWorkoutSession>('WorkoutSession', WorkoutSessionSchema);
 export const VideoProgress = mongoose.model<IVideoProgress>('VideoProgress', VideoProgressSchema);
 export const VideoBookmark = mongoose.model<IVideoBookmark>('VideoBookmark', VideoBookmarkSchema);
