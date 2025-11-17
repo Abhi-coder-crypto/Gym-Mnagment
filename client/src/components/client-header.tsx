@@ -10,12 +10,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Dumbbell, Calendar, Video, UtensilsCrossed, User, History, Image, ChevronDown, TrendingUp, Scale, Ruler, LineChart, Target, Award, Trophy, FileText, MessageSquare, TicketIcon, Bell, MessageCircle } from "lucide-react";
+import { Dumbbell, Calendar, Video, UtensilsCrossed, User, History, Image, ChevronDown, TrendingUp, Scale, Ruler, LineChart, Target, Award, Trophy, FileText, MessageSquare, TicketIcon, Bell, MessageCircle, CalendarDays } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/language-context";
 
 interface ClientHeaderProps {
-  currentPage?: 'dashboard' | 'workouts' | 'videos' | 'diet' | 'sessions' | 'history' | 'workout-history' | 'progress' | 'profile' | 'weight-tracking' | 'body-measurements' | 'progress-charts' | 'weekly-completion' | 'achievements' | 'achievement-gallery' | 'personal-records' | 'monthly-reports' | 'goals' | 'messages' | 'support-tickets' | 'announcements' | 'forum';
+  currentPage?: 'dashboard' | 'workouts' | 'videos' | 'diet' | 'sessions' | 'history' | 'workout-history' | 'progress' | 'profile' | 'weight-tracking' | 'body-measurements' | 'progress-charts' | 'weekly-completion' | 'achievements' | 'achievement-gallery' | 'personal-records' | 'monthly-reports' | 'goals' | 'calendar' | 'messages' | 'support-tickets' | 'announcements' | 'forum';
 }
 
 export function ClientHeader({ currentPage }: ClientHeaderProps) {
@@ -53,6 +53,16 @@ export function ClientHeader({ currentPage }: ClientHeaderProps) {
               >
                 <Target className="h-4 w-4 mr-2" />
                 {t('goals.title')}
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                className={currentPage === 'calendar' ? 'bg-accent' : ''} 
+                onClick={() => setLocation("/client/calendar")}
+                data-testid="link-calendar"
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Calendar
               </Button>
 
               <DropdownMenu>
