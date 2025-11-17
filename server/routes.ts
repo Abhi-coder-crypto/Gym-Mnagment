@@ -351,8 +351,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get client by ID (admin only - protected)
-  app.get("/api/clients/:id", authenticateToken, requireAdmin, async (req, res) => {
+  // Get client by ID (owner or admin - protected)
+  app.get("/api/clients/:id", authenticateToken, requireOwnershipOrAdmin, async (req, res) => {
     try {
       const client = await storage.getClient(req.params.id);
       if (!client) {
@@ -374,8 +374,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update client (admin only - protected)
-  app.patch("/api/clients/:id", authenticateToken, requireAdmin, async (req, res) => {
+  // Update client (owner or admin - protected)
+  app.patch("/api/clients/:id", authenticateToken, requireOwnershipOrAdmin, async (req, res) => {
     try {
       const client = await storage.updateClient(req.params.id, req.body);
       if (!client) {
@@ -594,8 +594,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Payment History routes (admin only - protected)
-  app.get("/api/payment-history/:clientId", authenticateToken, requireAdmin, async (req, res) => {
+  // Payment History routes (owner or admin - protected)
+  app.get("/api/payment-history/:clientId", authenticateToken, requireOwnershipOrAdmin, async (req, res) => {
     try {
       const payments = await storage.getClientPaymentHistory(req.params.clientId);
       res.json(payments);
