@@ -1,6 +1,7 @@
 // Load environment variables from .env file
+// Note: Replit Secrets take priority over .env file
 import dotenv from "dotenv";
-dotenv.config({ override: true });
+dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
