@@ -56,22 +56,22 @@ export default function AdminDashboard() {
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full overflow-hidden">
         <AdminSidebar />
-        <div className="flex flex-col flex-1">
-          <header className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col flex-1 min-w-0">
+          <header className="flex flex-wrap items-center justify-between gap-2 p-3 sm:p-4 border-b min-h-[56px]">
+            <div className="flex items-center gap-2 sm:gap-4">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <h1 className="text-2xl font-display font-bold tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-display font-bold tracking-tight">
                 Dashboard
               </h1>
             </div>
             <ThemeToggle />
           </header>
 
-          <main className="flex-1 overflow-auto p-8">
-            <div className="max-w-7xl mx-auto space-y-8">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
                   title="Total Clients"
                   value={totalClients}
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="font-display">Recent Clients</CardTitle>
