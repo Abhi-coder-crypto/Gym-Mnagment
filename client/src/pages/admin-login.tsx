@@ -171,7 +171,7 @@ export default function AdminLogin() {
                       variant="link"
                       type="button"
                       className="text-sm"
-                      onClick={() => setLocation("/forgot-password")}
+                      onClick={() => setLocation("/admin/forgot-password")}
                       data-testid="link-forgot-password"
                     >
                       Forgot Password?
@@ -222,7 +222,7 @@ export default function AdminLogin() {
                       variant="link"
                       type="button"
                       className="text-sm"
-                      onClick={() => setLocation("/forgot-password")}
+                      onClick={() => setLocation("/admin/forgot-password")}
                       data-testid="link-forgot-password-trainer"
                     >
                       Forgot Password?

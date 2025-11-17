@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Link } from "wouter";
-import { ArrowLeft, KeyRound } from "lucide-react";
+import { ArrowLeft, KeyRound, Shield } from "lucide-react";
 
 const resetPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -23,7 +23,7 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
-export default function ForgotPassword() {
+export default function AdminForgotPassword() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -44,6 +44,7 @@ export default function ForgotPassword() {
         body: JSON.stringify({
           email: data.email,
           newPassword: data.newPassword,
+          isAdmin: true,
         }),
       });
       return response;
@@ -51,10 +52,10 @@ export default function ForgotPassword() {
     onSuccess: () => {
       toast({
         title: "Password Reset Successful",
-        description: "Your password has been updated. Please login with your new password.",
+        description: "Your admin password has been updated. Please login with your new password.",
       });
       setTimeout(() => {
-        setLocation("/client-access");
+        setLocation("/admin/login");
       }, 2000);
     },
     onError: (error: any) => {
@@ -75,11 +76,11 @@ export default function ForgotPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2">
-            <KeyRound className="h-6 w-6 text-primary" />
-            <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+            <Shield className="h-6 w-6 text-primary" />
+            <CardTitle className="text-2xl font-bold">Admin Password Reset</CardTitle>
           </div>
           <CardDescription>
-            Enter your registered email and new password to reset instantly
+            Enter your admin email and new password to reset instantly
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,12 +91,12 @@ export default function ForgotPassword() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Registered Email</FormLabel>
+                    <FormLabel>Admin Email</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
-                        placeholder="your.email@example.com"
+                        placeholder="admin@fitpro.com"
                         data-testid="input-email"
                         disabled={resetPasswordMutation.isPending}
                       />
@@ -161,9 +162,9 @@ export default function ForgotPassword() {
                 asChild
                 data-testid="button-back-to-login"
               >
-                <Link href="/client-access">
+                <Link href="/admin/login">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Login
+                  Back to Admin Login
                 </Link>
               </Button>
             </form>

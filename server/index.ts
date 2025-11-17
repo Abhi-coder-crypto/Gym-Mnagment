@@ -13,6 +13,7 @@ import { hashPassword } from "./utils/auth";
 import { User } from "./models/user";
 import { Trainer } from "./models";
 import { startSessionReminderScheduler } from "./utils/session-reminder-scheduler";
+import { emailService } from "./utils/email";
 
 const app = express();
 

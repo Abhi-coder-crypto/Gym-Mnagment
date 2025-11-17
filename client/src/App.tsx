@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import ClientAccess from "@/pages/client-access";
 import AdminLogin from "@/pages/admin-login";
 import ForgotPassword from "@/pages/forgot-password";
+import AdminForgotPassword from "@/pages/admin-forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminClientsEnhanced from "@/pages/admin-clients-enhanced";
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/client-access" component={ClientAccess} />
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/forgot-password" component={AdminForgotPassword} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin/dashboard" component={AdminDashboard} />

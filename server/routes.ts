@@ -221,6 +221,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Direct password reset (NO EMAIL/TOKEN REQUIRED)
+  app.post("/api/auth/reset-password-direct", async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
+      
+      if (!email || !newPassword) {
+        return res.status(400).json({ message: "Email and new password are required" });
+      }
+      
+      if (!validateEmail(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({ message: passwordValidation.message });
+      }
+      
+      const normalizedEmail = email.toLowerCase();
+      const user = await storage.getUserByEmail(normalizedEmail);
+      if (!user) {
+        return res.status(404).json({ message: "No account found with this email address" });
+      }
+      
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateUser(user._id.toString(), { password: hashedPassword });
+      
+      res.json({ 
+        message: "Password reset successfully. You can now login with your new password." 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+  
   // Get current authenticated user
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {

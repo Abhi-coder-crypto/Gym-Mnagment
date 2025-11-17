@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import sgMail from '@sendgrid/mail';
 import nodemailer from 'nodemailer';
 import { SystemSettings } from '../models';
