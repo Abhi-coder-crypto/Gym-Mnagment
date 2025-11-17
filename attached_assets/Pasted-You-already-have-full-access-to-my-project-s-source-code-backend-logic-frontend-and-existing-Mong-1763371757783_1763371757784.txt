@@ -1,0 +1,89 @@
+You already have full access to my project's source code, backend logic, frontend, and existing MongoDB structure.
+
+Your task:
+CHECK the complete CRM implementation according to the full requirement list I provided.
+
+IMPORTANT RULES:
+- Use ONLY the existing admin and trainer accounts to test.
+- Use ONLY the clients already present in the MongoDB database.
+- DO NOT create new fields.
+- DO NOT add hardcoded values.
+- DO NOT generate demo data.
+- Only test using existing real data from MongoDB.
+- ONLY check implementation and functionality.
+- At the end, list exactly which features are missing, incomplete, or not functioning.
+
+==========================================
+CHECK THE FOLLOWING ARE FULLY IMPLEMENTED:
+
+1️⃣ **CLIENT PORTAL FEATURES**
+- Dashboard & overview functionality
+- Workout management features
+- Diet & nutrition system
+- Advanced nutrition calculators
+- Live training/session booking
+- Progress tracking & analytics
+- Goal setting system
+- Profile & settings
+- Communication tools
+
+2️⃣ **ADMIN & TRAINER PORTAL FEATURES**
+- Dashboards & analytics
+- Client management
+- Video/workout library system
+- Diet plan creation & assignment
+- Live session management
+- Revenue & payments system
+- Analytics & reporting
+- System settings and roles
+
+3️⃣ **TECHNICAL + BACKEND FEATURES**
+- Security & authentication
+- Data management (cloud data, backups, encryption)
+- Notification system (use email: abhijeet18012001@gmail.com for setup)
+- PHP email sending setup
+- Payment integration placeholders (no API needed yet)
+- Video hosting/streaming pipeline
+- Live session integration (Zoom/Meet structure only)
+- Zoom/Meet scheduling setup from admin
+- All required backend endpoints working
+- All client/admin/trainer pages loading with real data
+
+==========================================
+YOUR WORK NOW:
+
+1. Go through the entire project codebase.
+2. Use existing MongoDB data to load every page and feature.
+3. Test the entire CRM flow:
+   - Admin → Trainer → Client cycle
+   - Client dashboard & all features
+   - Admin management features
+   - Trainer management features
+
+4. For EVERY feature I listed:
+   - Check if it exists.
+   - Check if it is implemented properly.
+   - Check if it works using the current database.
+   - Check if the UI, backend, and database are aligned.
+
+5. Do NOT modify anything.
+6. Do NOT populate any data.
+7. Do NOT create mock data.
+8. ONLY validate and report.
+
+==========================================
+FINAL OUTPUT REQUIRED:
+
+Provide a structured list:
+
+A) **Fully Implemented Features**  
+B) **Partially Implemented Features**  
+C) **Missing or Not Implemented Features** (most important output)
+
+For missing features:
+- Only list them.
+- Do NOT propose solutions.
+- Do NOT add fields.
+- Do NOT generate code unless I ask later.
+
+This is a QA/verification task ONLY.
