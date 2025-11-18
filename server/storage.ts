@@ -19,6 +19,7 @@ import {
   Goal,
   PaymentHistory,
   SystemSettings,
+  Trainer,
   type IPackage,
   type IClient,
   type IBodyMetrics,
@@ -38,6 +39,7 @@ import {
   type IGoal,
   type IPaymentHistory,
   type ISystemSettings,
+  type ITrainer,
 } from './models';
 import { Message, type IMessage } from './models/message';
 import { Ticket, type ITicket } from './models/ticket';
@@ -74,12 +76,13 @@ export interface IStorage {
   updatePackage(id: string, data: Partial<IPackage>): Promise<IPackage | null>;
   
   // Client methods
-  getAllClients(): Promise<IClient[]>;
+  getAllClients(includeInactive?: boolean): Promise<IClient[]>;
   getClient(id: string): Promise<IClient | null>;
   getClientByPhone(phone: string): Promise<IClient | null>;
   createClient(data: Partial<IClient>): Promise<IClient>;
   updateClient(id: string, data: Partial<IClient>): Promise<IClient | null>;
   deleteClient(id: string): Promise<boolean>;
+  permanentlyDeleteClient(id: string): Promise<boolean>;
   
   // Body Metrics methods
   getClientBodyMetrics(clientId: string): Promise<IBodyMetrics[]>;
@@ -277,8 +280,9 @@ export class MongoStorage implements IStorage {
   }
 
   // Client methods
-  async getAllClients(): Promise<IClient[]> {
-    return await Client.find().populate('packageId');
+  async getAllClients(includeInactive: boolean = false): Promise<IClient[]> {
+    const filter = includeInactive ? {} : { status: { $ne: 'inactive' } };
+    return await Client.find(filter).populate('packageId');
   }
 
   async getClient(id: string): Promise<IClient | null> {
@@ -299,9 +303,41 @@ export class MongoStorage implements IStorage {
   }
 
   async deleteClient(id: string): Promise<boolean> {
+    const result = await Client.findByIdAndUpdate(
+      id, 
+      { status: 'inactive', lastActivityDate: new Date() }, 
+      { new: true }
+    );
+    
+    if (result) {
+      await User.updateOne({ clientId: id }, { status: 'inactive' });
+    }
+    
+    return !!result;
+  }
+  
+  async permanentlyDeleteClient(id: string): Promise<boolean> {
     const result = await Client.findByIdAndDelete(id);
     if (result) {
       await User.deleteOne({ clientId: id });
+      
+      await BodyMetrics.deleteMany({ clientId: id });
+      await ClientVideo.deleteMany({ clientId: id });
+      await VideoProgress.deleteMany({ clientId: id });
+      await VideoBookmark.deleteMany({ clientId: id });
+      await WorkoutSession.deleteMany({ clientId: id });
+      await SessionClient.deleteMany({ clientId: id });
+      await SessionWaitlist.deleteMany({ clientId: id });
+      await ProgressPhoto.deleteMany({ clientId: id });
+      await Achievement.deleteMany({ clientId: id });
+      await Goal.deleteMany({ clientId: id });
+      await PaymentHistory.deleteMany({ clientId: id });
+      await Message.deleteMany({ $or: [{ senderId: id }, { recipientId: id }] });
+      await Ticket.deleteMany({ clientId: id });
+      await Notification.deleteMany({ userId: id });
+      
+      await WorkoutPlan.deleteMany({ clientId: id, clonedFrom: { $exists: true } });
+      await DietPlan.deleteMany({ clientId: id, clonedFrom: { $exists: true } });
     }
     return !!result;
   }
@@ -640,7 +676,10 @@ export class MongoStorage implements IStorage {
       typeof c === 'object' ? c._id : c
     );
     
-    return await Client.find({ _id: { $in: assignedClientIds } })
+    return await Client.find({ 
+      _id: { $in: assignedClientIds },
+      status: { $ne: 'inactive' }
+    })
       .populate('packageId')
       .sort({ createdAt: -1 });
   }

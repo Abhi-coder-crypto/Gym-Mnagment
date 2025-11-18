@@ -23,7 +23,6 @@ import {
   Palette,
   Users,
   Bell,
-  Database,
   Plug,
   Save,
   Download,
@@ -64,34 +63,6 @@ export default function AdminSettings() {
     },
   });
 
-  const createBackupMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('/api/settings/backup', 'POST', {});
-      return response.json();
-    },
-    onSuccess: (data) => {
-      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = data.filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
-      toast({
-        title: "Success",
-        description: "Backup created and downloaded successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create backup",
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleSaveSettings = (section: string, data: any) => {
     updateSettingsMutation.mutate({
@@ -144,7 +115,7 @@ export default function AdminSettings() {
           <main className="flex-1 overflow-auto p-8">
             <div className="max-w-6xl mx-auto space-y-6">
               <Tabs defaultValue="branding" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
                   <TabsTrigger value="branding" data-testid="tab-branding">
                     <Palette className="w-4 h-4 mr-2" />
                     Branding
@@ -168,10 +139,6 @@ export default function AdminSettings() {
                   <TabsTrigger value="notifications" data-testid="tab-notifications">
                     <Bell className="w-4 h-4 mr-2" />
                     Notifications
-                  </TabsTrigger>
-                  <TabsTrigger value="backup" data-testid="tab-backup">
-                    <Database className="w-4 h-4 mr-2" />
-                    Backup
                   </TabsTrigger>
                   <TabsTrigger value="integrations" data-testid="tab-integrations">
                     <Plug className="w-4 h-4 mr-2" />
@@ -493,33 +460,85 @@ export default function AdminSettings() {
 
                 {/* User Roles */}
                 <TabsContent value="roles">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        User Roles & Permissions
-                      </CardTitle>
-                      <CardDescription>
-                        Manage admin, trainer, and receptionist permissions
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {settings.userRoles?.map((role: any, index: number) => (
-                        <div key={index} className="p-4 border rounded-md space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium">{role.roleName}</h4>
-                            <Badge>{role.permissions?.length || 0} permissions</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{role.description}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {role.permissions?.map((permission: string, i: number) => (
-                              <Badge key={i} variant="secondary">{permission}</Badge>
-                            ))}
-                          </div>
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="w-5 h-5" />
+                          Trainer Management
+                        </CardTitle>
+                        <CardDescription>
+                          Create and manage trainer accounts with login credentials
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Use the Trainers page to create new trainer accounts, assign clients, and manage their credentials. 
+                          Each trainer will receive a unique email and password to access the system.
+                        </p>
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                          <Button 
+                            onClick={() => window.location.href = '/admin/trainers'}
+                            data-testid="button-manage-trainers"
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            Manage Trainers
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => window.location.href = '/admin/client-setup'}
+                            data-testid="button-setup-clients"
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            Setup Client Credentials
+                          </Button>
                         </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>User Roles Overview</CardTitle>
+                        <CardDescription>
+                          System roles and their capabilities
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-4 border rounded-md space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">Admin</h4>
+                            <Badge>Full Access</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Complete system control including client management, trainer management, 
+                            package configuration, billing, and system settings.
+                          </p>
+                        </div>
+
+                        <div className="p-4 border rounded-md space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">Trainer</h4>
+                            <Badge variant="secondary">Limited Access</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Manage assigned clients, create diet plans and workout programs, 
+                            conduct live sessions, and track client progress.
+                          </p>
+                        </div>
+
+                        <div className="p-4 border rounded-md space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">Client</h4>
+                            <Badge variant="outline">User Access</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Access personal dashboard, view assigned workouts and diet plans, 
+                            track progress, join live sessions, and communicate with trainers.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
 
                 {/* Notification Settings */}
@@ -651,86 +670,6 @@ export default function AdminSettings() {
                         <Save className="w-4 h-4 mr-2" />
                         {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
                       </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Backup & Data Export */}
-                <TabsContent value="backup">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Database className="w-5 h-5" />
-                        Backup & Data Export
-                      </CardTitle>
-                      <CardDescription>
-                        Manage system data backups and exports
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="flex items-center justify-between p-4 border rounded-md">
-                        <div>
-                          <Label htmlFor="autoBackup">Automatic Backups</Label>
-                          <p className="text-sm text-muted-foreground">Enable automated system backups</p>
-                        </div>
-                        <Switch
-                          id="autoBackup"
-                          defaultChecked={settings.backup?.autoBackup === true}
-                          data-testid="switch-auto-backup"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="backupFrequency">Backup Frequency</Label>
-                        <Select defaultValue={settings.backup?.backupFrequency || 'weekly'}>
-                          <SelectTrigger id="backupFrequency" data-testid="select-backup-frequency">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {settings.backup?.lastBackupDate && (
-                        <div className="p-4 bg-muted rounded-md">
-                          <p className="text-sm">
-                            Last backup: {new Date(settings.backup.lastBackupDate).toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex gap-4">
-                        <Button 
-                          onClick={() => {
-                            const autoBackup = (document.getElementById('autoBackup') as HTMLInputElement).checked;
-                            const backupFrequency = (document.getElementById('backupFrequency') as HTMLInputElement).value;
-                            
-                            handleSaveSettings('backup', {
-                              autoBackup,
-                              backupFrequency,
-                              lastBackupDate: settings.backup?.lastBackupDate
-                            });
-                          }}
-                          disabled={updateSettingsMutation.isPending}
-                          variant="outline"
-                          data-testid="button-save-backup-settings"
-                        >
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Settings
-                        </Button>
-                        
-                        <Button 
-                          onClick={() => createBackupMutation.mutate()}
-                          disabled={createBackupMutation.isPending}
-                          data-testid="button-create-backup"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          {createBackupMutation.isPending ? 'Creating...' : 'Create Backup Now'}
-                        </Button>
-                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
