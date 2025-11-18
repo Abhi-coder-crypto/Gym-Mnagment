@@ -32,9 +32,8 @@ const menuItems = [
   { title: "Videos", icon: Video, url: "/admin/videos" },
   { title: "Diet Plans", icon: UtensilsCrossed, url: "/admin/diet" },
   { title: "Live Sessions", icon: Calendar, url: "/admin/sessions" },
-  { title: "Analytics", icon: BarChart3, url: "/admin/analytics" },
+  { title: "Analytics", icon: TrendingUp, url: "/admin/analytics" },
   { title: "Reports", icon: FileText, url: "/admin/reports" },
-  { title: "Advanced Analytics", icon: TrendingUp, url: "/admin/advanced-analytics" },
   { title: "Revenue", icon: DollarSign, url: "/admin/revenue" },
   { title: "Settings", icon: Settings, url: "/admin/settings" },
 ];

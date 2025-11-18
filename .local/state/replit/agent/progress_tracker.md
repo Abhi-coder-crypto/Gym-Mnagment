@@ -568,3 +568,41 @@ All import tasks have been successfully completed. The FitPro Management System 
 ✅ **Future-Ready** - Easy to integrate WhatsApp notifications later
 
 **FINAL STATUS:** ✅ All 262 progress tracker items marked [x] and verified operational! Migration 100% complete!
+
+## Session (2025-11-18 04:16 UTC) - UNIFIED ANALYTICS & ADVANCED INSIGHTS PAGE
+[x] 263. Merged admin-analytics.tsx and admin-advanced-analytics.tsx into ONE comprehensive page
+[x] 264. Fixed TypeScript error in apiRequest call (corrected parameter order: method, url)
+[x] 265. Restructured page so BOTH sections are always visible:
+  - "Overview" section with basic stats (Total Clients, Active Users, Monthly Revenue, Total Videos)
+  - "Advanced Engagement Metrics" section with engagement scores and churn risk analysis
+  - "Additional Insights" section with Package Distribution and Recent Signups
+[x] 266. Advanced analytics section now shows heading even when data not generated yet
+[x] 267. Added clear "Generate Report" button in card when advanced analytics data unavailable
+[x] 268. All data is pulled from REAL API endpoints (no mock data):
+  - /api/clients - Real client data from MongoDB
+  - /api/packages - Real package data from MongoDB
+  - /api/videos - Real video data from MongoDB
+  - /api/admin/analytics/engagement-report - Real engagement scores and churn risk analysis
+[x] 269. View Details button works properly - opens detailed client engagement breakdown
+[x] 270. Shows comprehensive metrics: Overall Score, Activity, Sessions, Workouts, Videos
+[x] 271. Displays client insights & recommendations when View Details is clicked
+[x] 272. Removed duplicate "Advanced Analytics" link from admin sidebar
+[x] 273. Updated sidebar to show single "Analytics" link with TrendingUp icon
+[x] 274. Workflow restarted successfully - Server running on http://0.0.0.0:5000
+[x] 275. MongoDB connection verified - 3 existing packages loaded
+[x] 276. All API endpoints responding correctly (verified in logs)
+[x] 277. ✅ UNIFIED ANALYTICS PAGE 100% COMPLETE - All features integrated and working!
+
+**📊 UNIFIED ANALYTICS FEATURES:**
+✅ **Single Page** - No more navigation between basic and advanced analytics
+✅ **Always Visible** - Both basic and advanced sections always displayed
+✅ **Real Data** - All metrics pulled from actual MongoDB data via API endpoints
+✅ **Engagement Scoring** - Shows client activity scores, session participation, workout completion
+✅ **Churn Risk Analysis** - Low/Medium/High risk distribution with color-coded badges
+✅ **Client Details** - View Details button opens comprehensive engagement breakdown
+✅ **Top/Low Engaged Tabs** - Easy filtering of clients by engagement level
+✅ **At Risk Tab** - Dedicated view for high churn risk clients needing attention
+✅ **Package Distribution** - Visual progress bars showing Basic/Premium/Elite breakdown
+✅ **Recent Signups** - Latest client registrations with join dates
+
+**FINAL STATUS:** ✅ All 277 progress tracker items marked [x] and verified operational! Migration 100% complete!
