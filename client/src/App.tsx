@@ -19,6 +19,7 @@ import AdminSessions from "@/pages/admin-sessions";
 import AdminAnalyticsEnhanced from "@/pages/admin-analytics-enhanced";
 import AdminRevenueEnhanced from "@/pages/admin-revenue-enhanced";
 import AdminAnalyticsReports from "@/pages/admin-analytics-reports";
+import AdminAdvancedAnalytics from "@/pages/admin-advanced-analytics";
 import AdminSettings from "@/pages/admin-settings";
 import AdminTrainers from "@/pages/admin-trainers";
 import TrainerDashboard from "@/pages/trainer-dashboard";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/admin/sessions" component={AdminSessions} />
       <Route path="/admin/analytics" component={AdminAnalyticsEnhanced} />
       <Route path="/admin/reports" component={AdminAnalyticsReports} />
+      <Route path="/admin/advanced-analytics" component={AdminAdvancedAnalytics} />
       <Route path="/admin/revenue" component={AdminRevenueEnhanced} />
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/admin/trainers" component={AdminTrainers} />

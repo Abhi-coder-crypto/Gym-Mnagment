@@ -3212,6 +3212,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced Analytics - Engagement Scoring & Predictive Indicators
+  app.get('/api/admin/analytics/engagement-report', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      console.log('[API] Generating engagement report...');
+      const { analyticsEngine } = await import('./analytics-engine');
+      const report = await analyticsEngine.generateReport();
+      res.json(report);
+    } catch (error: any) {
+      console.error('[API] Error generating engagement report:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get('/api/admin/analytics/engagement-scores', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const { analyticsEngine } = await import('./analytics-engine');
+      const scores = analyticsEngine.getScoresFromCache();
+      
+      if (scores.length === 0) {
+        await analyticsEngine.calculateEngagementScores();
+        const newScores = analyticsEngine.getScoresFromCache();
+        return res.json(newScores);
+      }
+      
+      res.json(scores);
+    } catch (error: any) {
+      console.error('[API] Error getting engagement scores:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post('/api/admin/analytics/refresh-engagement', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      console.log('[API] Refreshing engagement scores...');
+      const { analyticsEngine } = await import('./analytics-engine');
+      const scores = await analyticsEngine.calculateEngagementScores();
+      res.json({
+        message: 'Engagement scores refreshed successfully',
+        processedClients: scores.length,
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      console.error('[API] Error refreshing engagement scores:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get('/api/admin/analytics/cache-info', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const { analyticsEngine } = await import('./analytics-engine');
+      const cacheInfo = analyticsEngine.getCacheInfo();
+      res.json(cacheInfo);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // System Settings routes
   app.get("/api/settings", async (_req, res) => {
     try {
