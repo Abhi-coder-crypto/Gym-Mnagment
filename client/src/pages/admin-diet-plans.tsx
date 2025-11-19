@@ -22,6 +22,7 @@ import {
   Filter,
   BookOpen,
   ChefHat,
+  Dumbbell,
 } from "lucide-react";
 import { CreateDietPlanModal } from "@/components/create-diet-plan-modal";
 import { MealBuilderModal } from "@/components/meal-builder-modal";
@@ -37,6 +38,8 @@ export default function AdminDietPlans() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [editingMeal, setEditingMeal] = useState<any>(null);
+  const [createWorkoutOpen, setCreateWorkoutOpen] = useState(false);
+  const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
 
   const { data: templates = [], isLoading: templatesLoading } = useQuery<any[]>({
     queryKey: ['/api/diet-plan-templates', categoryFilter],
@@ -58,6 +61,15 @@ export default function AdminDietPlans() {
 
   const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<any[]>({
     queryKey: ['/api/diet-plans-with-assignments'],
+  });
+
+  const { data: workoutPlans = [], isLoading: workoutPlansLoading } = useQuery<any[]>({
+    queryKey: ['/api/workout-plans', searchQuery],
+    queryFn: async () => {
+      const params = searchQuery ? `?search=${searchQuery}` : '';
+      const res = await fetch(`/api/workout-plans${params}`);
+      return res.json();
+    },
   });
 
   const deletePlanMutation = useMutation({
@@ -120,6 +132,26 @@ export default function AdminDietPlans() {
     },
   });
 
+  const deleteWorkoutMutation = useMutation({
+    mutationFn: async (workoutId: string) => {
+      return apiRequest('DELETE', `/api/workout-plans/${workoutId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans'] });
+      toast({
+        title: "Success",
+        description: "Workout plan deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete workout plan",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAssign = (plan: any) => {
     setSelectedPlan(plan);
     setAssignDialogOpen(true);
@@ -144,6 +176,12 @@ export default function AdminDietPlans() {
   const handleEditMeal = (meal: any) => {
     setEditingMeal(meal);
     setCreateMealOpen(true);
+  };
+
+  const handleDeleteWorkout = (workoutId: string) => {
+    if (confirm("Are you sure you want to delete this workout plan?")) {
+      deleteWorkoutMutation.mutate(workoutId);
+    }
   };
 
   const filteredTemplates = templates.filter(plan =>
@@ -179,7 +217,7 @@ export default function AdminDietPlans() {
           <main className="flex-1 overflow-auto p-8">
             <div className="max-w-7xl mx-auto space-y-6">
               <Tabs defaultValue="templates" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="templates" data-testid="tab-templates">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Plan Templates
@@ -187,6 +225,10 @@ export default function AdminDietPlans() {
                   <TabsTrigger value="meals" data-testid="tab-meals">
                     <ChefHat className="h-4 w-4 mr-2" />
                     Meal Database
+                  </TabsTrigger>
+                  <TabsTrigger value="workouts" data-testid="tab-workouts">
+                    <Dumbbell className="h-4 w-4 mr-2" />
+                    Workout Plans
                   </TabsTrigger>
                   <TabsTrigger value="assignments" data-testid="tab-assignments">
                     <Users className="h-4 w-4 mr-2" />
@@ -419,6 +461,108 @@ export default function AdminDietPlans() {
                                 className="flex-1"
                                 onClick={() => handleDeleteMeal(meal._id)}
                                 data-testid="button-delete-meal"
+                              >
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Workout Plans Tab */}
+                <TabsContent value="workouts" className="space-y-6 mt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search workout plans..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                        data-testid="input-search-workouts"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setSelectedWorkout(null);
+                        setCreateWorkoutOpen(true);
+                      }}
+                      data-testid="button-create-workout"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Workout
+                    </Button>
+                  </div>
+
+                  {workoutPlansLoading ? (
+                    <div className="text-center py-12 text-muted-foreground">Loading workout plans...</div>
+                  ) : workoutPlans.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No workout plans found</p>
+                      <Button onClick={() => setCreateWorkoutOpen(true)} className="mt-4" variant="outline">
+                        Create Your First Workout Plan
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {workoutPlans.map((workout) => (
+                        <Card key={workout._id} data-testid={`card-workout-${workout._id}`} className="hover-elevate">
+                          <CardHeader>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <CardTitle className="font-display text-lg">{workout.name}</CardTitle>
+                                {workout.description && (
+                                  <CardDescription className="mt-2">{workout.description}</CardDescription>
+                                )}
+                              </div>
+                              <Badge variant="outline">{workout.difficulty || "Intermediate"}</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Duration</span>
+                                <span className="font-semibold">{workout.duration || workout.weeks} weeks</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Days per Week</span>
+                                <span className="font-semibold">{workout.daysPerWeek || workout.schedule?.length || 0}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Focus</span>
+                                <span className="font-semibold">{workout.focus || workout.type || "General"}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  Assigned
+                                </span>
+                                <span className="font-semibold">{workout.assignedCount || 0} clients</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedWorkout(workout);
+                                  setCreateWorkoutOpen(true);
+                                }}
+                                data-testid="button-edit-workout"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteWorkout(workout._id)}
+                                data-testid="button-delete-workout"
                               >
                                 <Trash2 className="h-3 w-3 mr-1" />
                                 Delete
