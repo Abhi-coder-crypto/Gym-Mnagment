@@ -133,6 +133,7 @@ export interface IStorage {
   getClientWorkoutPlans(clientId: string): Promise<IWorkoutPlan[]>;
   getWorkoutPlan(id: string): Promise<IWorkoutPlan | null>;
   getWorkoutPlanTemplates(): Promise<IWorkoutPlan[]>;
+  getAllWorkoutPlans(search?: string): Promise<IWorkoutPlan[]>;
   createWorkoutPlan(data: Partial<IWorkoutPlan>): Promise<IWorkoutPlan>;
   updateWorkoutPlan(id: string, data: Partial<IWorkoutPlan>): Promise<IWorkoutPlan | null>;
   deleteWorkoutPlan(id: string): Promise<boolean>;
@@ -577,6 +578,18 @@ export class MongoStorage implements IStorage {
 
   async getWorkoutPlanTemplates(): Promise<IWorkoutPlan[]> {
     return await WorkoutPlan.find({ isTemplate: true }).sort({ createdAt: -1 });
+  }
+
+  async getAllWorkoutPlans(search?: string): Promise<IWorkoutPlan[]> {
+    const filter: any = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { goal: { $regex: search, $options: 'i' } }
+      ];
+    }
+    return await WorkoutPlan.find(filter).sort({ createdAt: -1 }).populate('clientId', 'name email');
   }
 
   async createWorkoutPlan(data: Partial<IWorkoutPlan>): Promise<IWorkoutPlan> {

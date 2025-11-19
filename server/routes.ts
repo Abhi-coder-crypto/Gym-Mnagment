@@ -1604,6 +1604,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all workout plans (for admin/trainer) with optional search
+  app.get("/api/workout-plans", async (req, res) => {
+    try {
+      const search = req.query.search as string | undefined;
+      const plans = await storage.getAllWorkoutPlans(search);
+      res.json(plans);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.get("/api/workout-plans/:clientId", async (req, res) => {
     try {
       const plans = await storage.getClientWorkoutPlans(req.params.clientId);
