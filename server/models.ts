@@ -114,6 +114,7 @@ export interface IWorkoutPlan extends Document {
 
 export interface IDietPlan extends Document {
   clientId?: string;
+  trainerId?: string;
   name: string;
   description?: string;
   category?: string;
@@ -411,6 +412,7 @@ const WorkoutPlanSchema = new Schema({
 
 const DietPlanSchema = new Schema({
   clientId: { type: Schema.Types.ObjectId, ref: 'Client' },
+  trainerId: { type: Schema.Types.ObjectId, ref: 'User' },
   name: { type: String, required: true },
   description: String,
   category: String,

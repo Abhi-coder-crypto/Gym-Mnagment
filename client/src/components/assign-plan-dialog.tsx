@@ -68,10 +68,14 @@ export function AssignPlanDialog({ open, onOpenChange, plan, resourceType = 'die
       if (resourceType === 'workout') {
         queryClient.invalidateQueries({ queryKey: ['/api/workout-plan-templates'] });
       } else if (resourceType === 'meal') {
-        queryClient.invalidateQueries({ queryKey: ['/api/meals'] });
+        // Meals create diet plans when assigned, so invalidate diet plan queries
+        queryClient.invalidateQueries({ queryKey: ['/api/diet-plans-with-assignments'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/diet-plan-templates'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/diet-plan-assignments'] });
       } else {
         queryClient.invalidateQueries({ queryKey: ['/api/diet-plans-with-assignments'] });
         queryClient.invalidateQueries({ queryKey: ['/api/diet-plan-templates'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/diet-plan-assignments'] });
       }
       const resourceLabel = resourceType === 'workout' ? 'Workout' : resourceType === 'meal' ? 'Meal' : 'Diet';
       toast({

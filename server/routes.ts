@@ -1872,6 +1872,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/meals/:id/clone", authenticateToken, requireRole('admin', 'trainer'), async (req, res) => {
+    try {
+      const { clientId } = req.body;
+      const meal = await storage.getMeal(req.params.id);
+      if (!meal) {
+        return res.status(404).json({ message: "Meal not found" });
+      }
+      
+      // If clientId is provided, create a simple diet plan for this meal and assign to client
+      if (clientId) {
+        // Get client to retrieve trainerId
+        const client = await storage.getClient(clientId);
+        if (!client) {
+          return res.status(404).json({ message: "Client not found" });
+        }
+        
+        // Create a diet plan containing just this meal
+        const mealObj = meal.toObject();
+        const dietPlan = await storage.createDietPlan({
+          clientId,
+          trainerId: client.trainerId,
+          name: `${meal.name} Meal Plan`,
+          targetCalories: meal.calories || 0,
+          protein: meal.protein || 0,
+          carbs: meal.carbs || 0,
+          fats: meal.fats || 0,
+          category: meal.category || 'Custom',
+          meals: {
+            [meal.mealType || 'lunch']: [mealObj]
+          },
+          isTemplate: false,
+          createdBy: req.user?.role || 'admin',
+        });
+        return res.json(dietPlan);
+      }
+      
+      // Otherwise, create a copy of the meal template
+      const clonedMeal = await storage.createMeal({
+        ...meal.toObject(),
+        _id: undefined,
+        name: `${meal.name} (Copy)`,
+        createdBy: req.user?.role || 'admin',
+      });
+      
+      res.json(clonedMeal);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Helper function to sanitize session data for clients
   const sanitizeSessionForClient = (session: any, userRole?: string) => {
     // Only admins and trainers can see startUrl and hostId
